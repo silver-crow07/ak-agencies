@@ -10,7 +10,7 @@ export function AnnouncementBar() {
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Desktop — 4-part balanced layout */}
-        <div className="hidden lg:flex items-center justify-between h-[42px] text-[11px] tracking-[0.04em]">
+        <div className="hidden xl:flex items-center justify-between h-[42px] text-[11px] tracking-[0.04em]">
           <div className="flex items-center gap-2.5">
             <Truck size={14} strokeWidth={1.5} className="text-[#C69A45] shrink-0" />
             <div className="flex items-center gap-1.5">
@@ -69,8 +69,8 @@ export function AnnouncementBar() {
           </div>
         </div>
 
-        {/* Tablet (md) — 3 items, balanced */}
-        <div className="hidden md:flex lg:hidden items-center justify-between h-[38px] text-[10px] tracking-wide">
+        {/* Tablet (lg — xl) — 3 items, balanced */}
+        <div className="hidden lg:flex xl:hidden items-center justify-between h-[38px] text-[10px] tracking-wide">
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-1.5 text-white/90">
               <Truck size={12} strokeWidth={1.5} className="text-[#C69A45] shrink-0" />
@@ -92,6 +92,22 @@ export function AnnouncementBar() {
               <a href="https://wa.me/919473831097" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#C69A45] transition-colors" aria-label="WhatsApp"><MessageCircle size={12} strokeWidth={1.5} /></a>
             </div>
           </div>
+        </div>
+
+        {/* Tablet small (md — lg) — condensed 2-item */}
+        <div className="hidden md:flex lg:hidden items-center justify-center gap-6 h-[36px] text-[10px] tracking-wide">
+          <div className="flex items-center gap-1.5 text-white/90">
+            <Truck size={12} strokeWidth={1.5} className="text-[#C69A45] shrink-0" />
+            <span className="font-medium whitespace-nowrap">FAST DELIVERY</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-white/90">
+            <Shield size={12} strokeWidth={1.5} className="text-[#C69A45] shrink-0" />
+            <span className="font-medium whitespace-nowrap">PREMIUM QUALITY</span>
+          </div>
+          <a href="tel:+919473831097" className="flex items-center gap-1.5 text-white/85 hover:text-[#C69A45] transition-colors whitespace-nowrap">
+            <Phone size={12} strokeWidth={1.5} className="text-[#C69A45] shrink-0" />
+            <span className="font-medium">+91 9473831097</span>
+          </a>
         </div>
 
         {/* Mobile — simple, centered, readable */}

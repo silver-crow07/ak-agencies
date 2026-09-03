@@ -25,8 +25,8 @@ export function CustomOrderSection() {
           >
             <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: '4/5' }}>
               <img
-                src="https://images.unsplash.com/photo-1558171813-4c088753af8f?w=800&h=1000&fit=crop"
-                alt="Custom stitching service"
+                src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=1000&fit=crop"
+                alt="Custom stitching and bespoke tailoring"
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />

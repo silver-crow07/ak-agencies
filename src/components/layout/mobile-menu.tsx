@@ -54,16 +54,17 @@ export function MobileMenu() {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 h-[68px] border-b border-[#E8DFD6]/50 shrink-0 bg-[#FCFAF6]">
-              <Link href="/" onClick={toggleMobileMenu} className="flex items-center">
-                <div className="relative h-[36px] w-auto aspect-[4/3]">
+              <Link href="/" onClick={toggleMobileMenu} className="flex items-center gap-2.5">
+                <div className="relative h-[40px] w-auto aspect-[4/3]">
                   <Image
                     src="/images/aklogo.png"
                     alt="AK Agencies Barabanki"
                     fill
                     className="object-contain"
-                    sizes="100px"
+                    sizes="110px"
                   />
                 </div>
+                <span className="font-serif text-[16px] font-bold text-[#5B1515] tracking-tight">AK Agencies</span>
               </Link>
               <button
                 onClick={toggleMobileMenu}

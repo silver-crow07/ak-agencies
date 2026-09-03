@@ -6,6 +6,7 @@ import { HeroSection } from '@/components/sections/hero-section';
 import { USPBar } from '@/components/sections/usp-bar';
 import { CategorySection } from '@/components/sections/category-section';
 import { BestsellersSection } from '@/components/sections/bestsellers-section';
+import { ReelsSection } from '@/components/sections/reels-section';
 import { CustomOrderSection } from '@/components/sections/custom-order-section';
 import { FeaturedCollection } from '@/components/sections/featured-collection';
 import { WhyUsSection } from '@/components/sections/why-us-section';
@@ -22,6 +23,7 @@ export default function HomePage() {
         <USPBar />
         <CategorySection />
         <BestsellersSection />
+        <ReelsSection />
         <CustomOrderSection />
         <FeaturedCollection />
         <WhyUsSection />

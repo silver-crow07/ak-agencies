@@ -39,7 +39,6 @@
 
   html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
   }
 
   body {
@@ -301,6 +300,40 @@
     width: 34px;
     height: 1px;
     background: var(--color-gold);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     REELS SECTION — portrait cards carousel
+     ═══════════════════════════════════════════════════════════════ */
+  .reels-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .reel-slide {
+    width: calc((100% - 48px) / 4);
+  }
+  @media (max-width: 1023px) {
+    .reel-slide {
+      width: calc((100% - 32px) / 3);
+    }
+  }
+  @media (max-width: 767px) {
+    .reel-slide {
+      width: calc((100% - 12px) / 2);
+    }
+  }
+  @media (max-width: 639px) {
+    .reel-slide {
+      width: 65%;
+    }
+  }
+
+  .reel-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    border-radius: 1rem;
+    overflow: hidden;
   }
 
   /* ═══════════════════════════════════════════════════════════════
