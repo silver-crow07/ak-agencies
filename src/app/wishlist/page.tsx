@@ -1,8 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
+import { Heart, ShoppingCart, Trash2, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { StarRating } from '@/components/ui/star-rating';
@@ -10,8 +12,43 @@ import { useWishlist, useCart } from '@/store';
 import { formatPrice } from '@/lib/utils';
 
 export default function WishlistPage() {
-  const { items, removeItem } = useWishlist();
+  const router = useRouter();
+  const { items, removeItem, loaded } = useWishlist();
   const { addItem } = useCart();
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+        if (!data.success) {
+          router.push('/login');
+          return;
+        }
+        setAuthChecked(true);
+      } catch {
+        router.push('/login');
+      }
+    }
+    checkAuth();
+  }, [router]);
+
+  if (!authChecked || !loaded) {
+    return (
+      <>
+        <Header />
+        <main className="min-h-screen">
+          <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8 py-8 md:py-12">
+            <div className="flex items-center justify-center py-16">
+              <Loader2 size={24} className="animate-spin text-gold" />
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -55,7 +92,15 @@ export default function WishlistPage() {
                   className="flex gap-4 p-4 bg-white rounded-lg shadow-sm"
                 >
                   <Link href={`/product/${item.product.slug}`} className="w-24 h-24 rounded-md bg-cream overflow-hidden shrink-0 relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-cream to-light-gold/20" />
+                    {item.product.image ? (
+                      <img
+                        src={item.product.image}
+                        alt={item.product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-cream to-light-gold/20" />
+                    )}
                   </Link>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] text-gold font-medium tracking-wider uppercase">
@@ -76,7 +121,7 @@ export default function WishlistPage() {
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">
                     <button
-                      onClick={() => addItem(item.product, 1)}
+                      onClick={() => addItem(item.product)}
                       className="w-8 h-8 rounded-full bg-cream flex items-center justify-center text-text-light hover:bg-primary hover:text-white transition-colors"
                     >
                       <ShoppingCart size={14} />

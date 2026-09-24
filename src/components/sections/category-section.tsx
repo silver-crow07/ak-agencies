@@ -4,10 +4,13 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/section-heading';
-import { categories } from '@/data/products';
+import { Category } from '@/types';
 
-export function CategorySection() {
-  // First 4 categories in hero grid, next 4 in strip
+interface CategorySectionProps {
+  categories: Category[];
+}
+
+export function CategorySection({ categories }: CategorySectionProps) {
   const heroCategories = categories.slice(0, 4);
   const stripCategories = categories.slice(4, 8);
 
@@ -20,7 +23,6 @@ export function CategorySection() {
           subtitle="Curated collections of premium home furnishings"
         />
 
-        {/* Hero grid — 4 categories */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-3 md:mb-4">
           {heroCategories.map((category, i) => (
             <motion.div
@@ -40,9 +42,7 @@ export function CategorySection() {
                   alt={category.name}
                   className="cat-card-img"
                 />
-                {/* Gradient overlay */}
                 <div className="cat-card-overlay" />
-                {/* Content */}
                 <div className="cat-card-content">
                   <div className="cat-card-tag">{category.productCount} Products</div>
                   <h3 className="cat-card-title">{category.name}</h3>
@@ -55,7 +55,6 @@ export function CategorySection() {
           ))}
         </div>
 
-        {/* Strip row — next 4 categories */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {stripCategories.map((category, i) => (
             <motion.div

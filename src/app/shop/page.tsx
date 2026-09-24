@@ -1,17 +1,20 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, SlidersHorizontal, X, Grid3X3, LayoutList, ChevronDown } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ProductCard } from '@/components/product/product-card';
-import { products, categories } from '@/data/products';
+import { Product, Category } from '@/types';
 import { formatPrice } from '@/lib/utils';
 
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'rating' | 'newest';
 
 export default function ShopPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 15000]);
@@ -20,6 +23,65 @@ export default function ShopPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 12;
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch('/api/products?limit=100'),
+          fetch('/api/categories'),
+        ]);
+
+        const productsData = await productsRes.json();
+        const categoriesData = await categoriesRes.json();
+
+        if (productsData.success) {
+          const mappedProducts = productsData.data.map((p: Record<string, unknown>) => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            category: (p.category as { name: string }).name,
+            categorySlug: (p.category as { slug: string }).slug,
+            price: parseFloat(p.price as string),
+            originalPrice: p.compareAtPrice ? parseFloat(p.compareAtPrice as string) : undefined,
+            description: (p.description as string) || '',
+            shortDescription: (p.shortDescription as string) || '',
+            image: ((p.images as Array<{ url: string }>)[0]?.url) || '',
+            images: (p.images as Array<{ url: string }>).map((img) => img.url),
+            colors: p.colors as string[],
+            sizes: p.sizes as string[],
+            fabrics: p.fabrics as string[],
+            rating: p.rating as number ?? 0,
+            reviewCount: p.reviewCount as number,
+            badge: p.badge as Product['badge'],
+            inStock: p.inStock as boolean,
+            features: p.features as string[],
+            careInstructions: p.careInstructions ? (p.careInstructions as string).split(', ').filter(Boolean) : undefined,
+            material: (p.material as string) || undefined,
+          }));
+          setProducts(mappedProducts);
+        }
+
+        if (categoriesData.success) {
+          const mappedCategories = categoriesData.data.map((c: Record<string, unknown>) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            description: (c.description as string) || '',
+            image: (c.imageUrl as string) || '',
+            productCount: c.productCount as number,
+          }));
+          setCategories(mappedCategories);
+        }
+      } catch (error) {
+        console.error('Failed to load shop data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -53,7 +115,7 @@ export default function ShopPage() {
     }
 
     return result;
-  }, [searchQuery, selectedCategory, priceRange, sortBy]);
+  }, [products, searchQuery, selectedCategory, priceRange, sortBy]);
 
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const paginatedProducts = filteredProducts.slice(
@@ -72,7 +134,6 @@ export default function ShopPage() {
 
   const FilterContent = () => (
     <div className="space-y-6">
-      {/* Search */}
       <div>
         <h3 className="text-xs font-bold tracking-[2px] uppercase text-text mb-3">Search</h3>
         <div className="relative">
@@ -87,7 +148,6 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* Categories */}
       <div>
         <h3 className="text-xs font-bold tracking-[2px] uppercase text-text mb-3">Category</h3>
         <div className="space-y-1.5">
@@ -115,7 +175,6 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* Price */}
       <div>
         <h3 className="text-xs font-bold tracking-[2px] uppercase text-text mb-3">Price Range</h3>
         <div className="space-y-1.5">
@@ -138,7 +197,6 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* Clear filters */}
       {(selectedCategory || searchQuery || priceRange[0] !== 0 || priceRange[1] !== 15000) && (
         <button
           onClick={() => {
@@ -155,11 +213,26 @@ export default function ShopPage() {
     </div>
   );
 
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <main className="min-h-screen">
+          <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8 md:py-12">
+            <div className="flex items-center justify-center py-16">
+              <p className="text-sm text-text-light">Loading products...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
       <main className="min-h-screen">
-        {/* Breadcrumb */}
         <div className="bg-cream border-b border-border">
           <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-2 text-xs text-text-light">
@@ -172,16 +245,13 @@ export default function ShopPage() {
 
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8 md:py-12">
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Desktop Sidebar */}
             <aside className="hidden lg:block w-56 xl:w-64 shrink-0">
               <div className="sticky top-24">
                 <FilterContent />
               </div>
             </aside>
 
-            {/* Main content */}
             <div className="flex-1">
-              {/* Header bar */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                   <h1 className="font-serif text-2xl md:text-3xl font-bold text-primary">Shop</h1>
@@ -190,7 +260,6 @@ export default function ShopPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  {/* Mobile filter button */}
                   <button
                     onClick={() => setShowMobileFilters(true)}
                     className="lg:hidden flex items-center gap-2 px-3 sm:px-4 py-2 border border-border rounded text-[11px] sm:text-xs font-medium text-text hover:border-gold transition-colors"
@@ -198,7 +267,6 @@ export default function ShopPage() {
                     <SlidersHorizontal size={14} />
                     Filters
                   </button>
-                  {/* Sort */}
                   <div className="relative">
                     <select
                       value={sortBy}
@@ -212,7 +280,6 @@ export default function ShopPage() {
                     </select>
                     <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-light pointer-events-none" />
                   </div>
-                  {/* View toggle */}
                   <div className="hidden sm:flex items-center border border-border rounded overflow-hidden">
                     <button
                       onClick={() => setViewMode('grid')}
@@ -230,7 +297,6 @@ export default function ShopPage() {
                 </div>
               </div>
 
-              {/* Active filters */}
               {(selectedCategory || searchQuery) && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {selectedCategory && (
@@ -252,7 +318,6 @@ export default function ShopPage() {
                 </div>
               )}
 
-              {/* Products grid */}
               {paginatedProducts.length > 0 ? (
                 <div
                   className={
@@ -272,7 +337,6 @@ export default function ShopPage() {
                 </div>
               )}
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-8">
                   {Array.from({ length: totalPages }).map((_, i) => (
@@ -294,7 +358,6 @@ export default function ShopPage() {
           </div>
         </div>
 
-        {/* Mobile filter drawer */}
         <AnimatePresence>
           {showMobileFilters && (
             <>

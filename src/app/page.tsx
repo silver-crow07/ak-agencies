@@ -1,5 +1,3 @@
-'use client';
-
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { HeroSection } from '@/components/sections/hero-section';
@@ -13,16 +11,22 @@ import { WhyUsSection } from '@/components/sections/why-us-section';
 import { BrandStorySection } from '@/components/sections/brand-story-section';
 import { ReviewsSection } from '@/components/sections/reviews-section';
 import { SocialSection } from '@/components/sections/social-section';
+import { fetchCategories, fetchBestsellers } from '@/lib/api';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [categories, bestsellers] = await Promise.all([
+    fetchCategories(),
+    fetchBestsellers(),
+  ]);
+
   return (
     <>
       <Header />
       <main>
         <HeroSection />
         <USPBar />
-        <CategorySection />
-        <BestsellersSection />
+        <CategorySection categories={categories} />
+        <BestsellersSection products={bestsellers} />
         <ReelsSection />
         <CustomOrderSection />
         <FeaturedCollection />

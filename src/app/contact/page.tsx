@@ -9,11 +9,36 @@ import { Footer } from '@/components/layout/footer';
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitted(true);
-  };
+    if (submitting) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      } else {
+        setError(json.error ?? 'Failed to send message. Please try again.');
+      }
+    } catch {
+      setError('Failed to send message. Please check your connection and try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <>
@@ -106,6 +131,11 @@ export default function ContactPage() {
               ) : (
                 <form onSubmit={handleSubmit} className="bg-white rounded-xl p-6 md:p-8 shadow-sm">
                   <h2 className="font-serif text-xl font-bold text-primary mb-6">Send us a Message</h2>
+                  {error && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                      {error}
+                    </div>
+                  )}
                   <div className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
@@ -165,9 +195,10 @@ export default function ContactPage() {
                     </div>
                     <button
                       type="submit"
-                      className="w-full py-3 bg-primary text-white text-[11px] sm:text-xs font-bold tracking-[2px] uppercase rounded hover:bg-primary-dark transition-colors"
+                      disabled={submitting}
+                      className="w-full py-3 bg-primary text-white text-[11px] sm:text-xs font-bold tracking-[2px] uppercase rounded hover:bg-primary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Send Message
+                      {submitting ? 'Sending...' : 'Send Message'}
                     </button>
                   </div>
                 </form>

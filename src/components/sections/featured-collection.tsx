@@ -33,6 +33,24 @@ const collections = [
     span: 'lg:col-span-1',
     aspect: 'aspect-[4/3]',
   },
+  {
+    title: 'Cushion Covers',
+    subtitle: 'Add personality & comfort',
+    desc: '40+ styles',
+    image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=700&h=500&fit=crop',
+    href: '/shop/cushion-covers',
+    span: 'lg:col-span-1',
+    aspect: 'aspect-[4/3]',
+  },
+  {
+    title: 'Table Covers',
+    subtitle: 'Elegant table dressings',
+    desc: '25+ styles',
+    image: 'https://images.unsplash.com/photo-1617806118233-18e1de247200?w=700&h=500&fit=crop',
+    href: '/shop?category=table-covers',
+    span: 'lg:col-span-1',
+    aspect: 'aspect-[4/3]',
+  },
 ];
 
 export function FeaturedCollection() {
@@ -55,7 +73,7 @@ export function FeaturedCollection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.55, delay: i * 0.12 }}
-              className={`${i === 0 ? 'md:row-span-2' : ''}`}
+              className={i === 0 ? 'md:row-span-2' : ''}
             >
               <Link
                 href={col.href}

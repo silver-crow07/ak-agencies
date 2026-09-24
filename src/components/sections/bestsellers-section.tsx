@@ -3,13 +3,15 @@
 import Link from 'next/link';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { ProductCard } from '@/components/product/product-card';
-import { getBestsellers } from '@/data/products';
+import { Product } from '@/types';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 
-export function BestsellersSection() {
-  const bestsellers = getBestsellers();
+interface BestsellersSectionProps {
+  products: Product[];
+}
 
+export function BestsellersSection({ products }: BestsellersSectionProps) {
   return (
     <section className="section-spacing px-5 sm:px-6 lg:px-8 bg-cream/50">
       <div className="max-w-6xl mx-auto">
@@ -34,7 +36,7 @@ export function BestsellersSection() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {bestsellers.map((product) => (
+          {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

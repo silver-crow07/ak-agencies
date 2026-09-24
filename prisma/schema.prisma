@@ -1,0 +1,343 @@
+// AK Agencies — Prisma Schema
+// Step 1: Foundation — User model
+// Step 2A: Catalog foundation — Category, Product, ProductImage
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ──────────────────────────────────────────────────────
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+// ─── User ───────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  role         Role      @default(CUSTOMER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  addresses    Address[]
+  wishlistItems WishlistItem[]
+  cart          Cart?
+  orders        Order[]
+
+  @@map("users")
+}
+
+// ─── Address ─────────────────────────────────────────────────
+
+model Address {
+  id           String  @id @default(cuid())
+  userId       String
+  fullName     String
+  phone        String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  postalCode   String
+  country      String  @default("India")
+  isDefault    Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+// ─── Category ───────────────────────────────────────────────────
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+
+  @@map("categories")
+}
+
+// ─── Product ────────────────────────────────────────────────────
+
+model Product {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  shortDescription String?
+  description      String?
+  price            Decimal  @db.Decimal(10, 2)
+  compareAtPrice   Decimal? @db.Decimal(10, 2)
+  rating           Decimal? @db.Decimal(2, 1)
+  reviewCount      Int      @default(0)
+  badge            String?
+  inStock          Boolean  @default(true)
+  stockQuantity    Int      @default(0)
+  material         String?
+  colors           String[]
+  sizes            String[]
+  fabrics          String[]
+  features         String[]
+  careInstructions String?
+  categoryId       String
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  category Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  images   ProductImage[]
+  wishlistItems WishlistItem[]
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+
+  @@map("products")
+}
+
+// ─── WishlistItem ──────────────────────────────────────────────
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@map("wishlist_items")
+}
+
+// ─── Cart ──────────────────────────────────────────────────────
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+// ─── CartItem ──────────────────────────────────────────────────
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
+  @@index([cartId])
+  @@index([productId])
+  @@map("cart_items")
+}
+
+// ─── Order ─────────────────────────────────────────────────────
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  userId          String
+  status          OrderStatus @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+
+  subtotal        Decimal     @db.Decimal(10, 2)
+  shippingAmount  Decimal     @db.Decimal(10, 2)
+  total           Decimal     @db.Decimal(10, 2)
+
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+
+  shippingFullName     String
+  shippingPhone        String
+  shippingAddressLine1 String
+  shippingAddressLine2 String?
+  shippingCity         String
+  shippingState        String
+  shippingPostalCode   String
+  shippingCountry      String
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items           OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String   @id @default(cuid())
+  orderId        String
+  productId      String
+
+  productName    String
+  unitPrice      Decimal  @db.Decimal(10, 2)
+  quantity       Int
+  lineTotal      Decimal  @db.Decimal(10, 2)
+
+  createdAt      DateTime @default(now())
+
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// ─── ProductImage ───────────────────────────────────────────────
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+// ─── Homepage CMS ──────────────────────────────────────────────
+
+model HeroSlide {
+  id                   String   @id @default(cuid())
+  backgroundImage      String
+  mobileImage          String?
+  eyebrow              String?
+  title                String
+  description          String?
+  primaryButtonText    String?
+  primaryButtonUrl     String?
+  secondaryButtonText  String?
+  secondaryButtonUrl   String?
+  badge                String?
+  isActive             Boolean  @default(true)
+  displayOrder         Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+  @@map("hero_slides")
+}
+
+model InstagramReel {
+  id            String   @id @default(cuid())
+  title         String
+  reelUrl       String
+  thumbnailUrl  String
+  videoUrl      String?
+  category      String?
+  ctaText       String?
+  ctaUrl        String?
+  isActive      Boolean  @default(true)
+  displayOrder  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+  @@map("instagram_reels")
+}
+
+model InstagramPost {
+  id           String   @id @default(cuid())
+  imageUrl     String
+  postUrl      String
+  caption      String?
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+  @@map("instagram_posts")
+}
+
+model HomepageSettings {
+  id                   String   @id @default("singleton")
+  instagramHandle      String   @default("@akagenciesbarabanki")
+  instagramProfileUrl  String   @default("https://instagram.com/akagencies")
+  instagramFollowText  String   @default("Follow on Instagram")
+  updatedAt            DateTime @updatedAt
+
+  @@map("homepage_settings")
+}
+
+// ─── Contact Submissions ─────────────────────────────────────
+
+enum ContactSubmissionStatus {
+  NEW
+  READ
+  REPLIED
+  ARCHIVED
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  subject   String
+  message   String
+  status    ContactSubmissionStatus @default(NEW)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("contact_submissions")
+}

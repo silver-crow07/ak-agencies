@@ -11,7 +11,6 @@ import { useCart, useWishlist, useUI } from '@/store';
 const navLinks = [
   { label: 'HOME', href: '/' },
   { label: 'SHOP', href: '/shop', hasDropdown: true },
-  { label: 'CATEGORIES', href: '/shop', hasMega: true },
   { label: 'CUSTOM ORDERS', href: '/custom-order' },
   { label: 'ABOUT US', href: '/about' },
   { label: 'CONTACT US', href: '/contact' },
@@ -25,57 +24,19 @@ const shopDropdownItems = [
   { label: 'Offers', href: '/shop', badge: 'SALE' },
 ];
 
-const megaMenuData = [
-  {
-    group: 'CURTAINS & FABRICS',
-    items: [
-      { label: 'Curtains & Fabrics', href: '/shop/curtains' },
-      { label: 'Curtain Fabrics', href: '/shop/curtains' },
-      { label: 'Curtain Accessories', href: '/shop/curtain-accessories' },
-    ],
-  },
-  {
-    group: 'LIVING',
-    items: [
-      { label: 'Sofa Covers', href: '/shop/sofa-covers' },
-      { label: 'Cushion Covers', href: '/shop/cushion-covers' },
-      { label: 'Home Décor', href: '/shop/home-decor' },
-    ],
-  },
-  {
-    group: 'BEDROOM',
-    items: [
-      { label: 'Bedsheets', href: '/shop/bedsheets' },
-      { label: 'Pillow Covers', href: '/shop/cushion-covers' },
-    ],
-  },
-  {
-    group: 'FLOOR & BATH',
-    items: [
-      { label: 'Carpets & Rugs', href: '/shop/carpets' },
-      { label: 'Towels', href: '/shop/towels' },
-    ],
-  },
-];
 
 export function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [activeMega, setActiveMega] = useState(false);
   const dropdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const megaTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const megaMenuRef = useRef<HTMLDivElement>(null);
-  const megaTriggerRef = useRef<HTMLDivElement>(null);
   const { state: cartState } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { toggleMobileMenu, toggleSearch, toggleCart } = useUI();
 
   const closeAll = useCallback(() => {
     setActiveDropdown(null);
-    setActiveMega(false);
     if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
-    if (megaTimeoutRef.current) clearTimeout(megaTimeoutRef.current);
   }, []);
 
   useEffect(() => {
@@ -97,47 +58,18 @@ export function Navbar() {
   }, [closeAll]);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (!megaMenuRef.current && !megaTriggerRef.current) return;
-      const target = e.target as Node;
-      if (
-        megaMenuRef.current && !megaMenuRef.current.contains(target) &&
-        megaTriggerRef.current && !megaTriggerRef.current.contains(target)
-      ) {
-        closeAll();
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [closeAll]);
-
-  useEffect(() => {
     return () => {
       if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
-      if (megaTimeoutRef.current) clearTimeout(megaTimeoutRef.current);
     };
   }, []);
 
   const handleDropdownEnter = useCallback((label: string) => {
     if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
-    if (megaTimeoutRef.current) clearTimeout(megaTimeoutRef.current);
     setActiveDropdown(label);
-    setActiveMega(false);
   }, []);
 
   const handleDropdownLeave = useCallback(() => {
     dropdownTimeoutRef.current = setTimeout(() => setActiveDropdown(null), 180);
-  }, []);
-
-  const handleMegaEnter = useCallback(() => {
-    if (megaTimeoutRef.current) clearTimeout(megaTimeoutRef.current);
-    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
-    setActiveMega(true);
-    setActiveDropdown(null);
-  }, []);
-
-  const handleMegaLeave = useCallback(() => {
-    megaTimeoutRef.current = setTimeout(() => setActiveMega(false), 220);
   }, []);
 
   return (
@@ -239,15 +171,12 @@ export function Navbar() {
             {navLinks.map((link) => (
               <div
                 key={link.href + link.label}
-                ref={link.hasMega ? megaTriggerRef : undefined}
                 className="relative"
                 onMouseEnter={() => {
                   if (link.hasDropdown) handleDropdownEnter(link.label);
-                  if (link.hasMega) handleMegaEnter();
                 }}
                 onMouseLeave={() => {
                   if (link.hasDropdown) handleDropdownLeave();
-                  if (link.hasMega) handleMegaLeave();
                 }}
               >
                 <Link
@@ -255,19 +184,19 @@ export function Navbar() {
                   onClick={closeAll}
                   className={cn(
                     'relative flex items-center gap-0.5 px-2.5 py-2 text-[12.5px] font-medium tracking-[0.06em] uppercase transition-colors duration-250 whitespace-nowrap',
-                    link.href === '/' && !activeDropdown && !activeMega
+                    link.href === '/' && !activeDropdown
                       ? 'text-[#5B1515]'
                       : 'text-[#241B18]/75 hover:text-[#5B1515]'
                   )}
                 >
                   {link.label}
-                  {(link.hasDropdown || link.hasMega) && (
+                  {link.hasDropdown && (
                     <ChevronDown
                       size={10}
                       strokeWidth={1.8}
                       className={cn(
                         'transition-transform duration-250 text-[#6B5E57]/60',
-                        ((link.hasDropdown && activeDropdown === link.label) || (link.hasMega && activeMega)) && 'rotate-180 text-[#5B1515]'
+                        (link.hasDropdown && activeDropdown === link.label) && 'rotate-180 text-[#5B1515]'
                       )}
                     />
                   )}
@@ -393,15 +322,12 @@ export function Navbar() {
             {navLinks.map((link) => (
               <div
                 key={link.href + link.label}
-                ref={link.hasMega ? megaTriggerRef : undefined}
                 className="relative"
                 onMouseEnter={() => {
                   if (link.hasDropdown) handleDropdownEnter(link.label);
-                  if (link.hasMega) handleMegaEnter();
                 }}
                 onMouseLeave={() => {
                   if (link.hasDropdown) handleDropdownLeave();
-                  if (link.hasMega) handleMegaLeave();
                 }}
               >
                 <Link
@@ -409,26 +335,26 @@ export function Navbar() {
                   onClick={closeAll}
                   className={cn(
                     'relative flex items-center gap-1 px-4 xl:px-5 py-2 text-[14px] font-medium tracking-[0.08em] uppercase transition-colors duration-250 whitespace-nowrap',
-                    link.href === '/' && !activeDropdown && !activeMega
+                    link.href === '/' && !activeDropdown
                       ? 'text-[#5B1515]'
                       : 'text-[#241B18]/75 hover:text-[#5B1515]'
                   )}
                 >
                   {link.label}
-                  {(link.hasDropdown || link.hasMega) && (
+                  {link.hasDropdown && (
                     <ChevronDown
                       size={11}
                       strokeWidth={1.8}
                       className={cn(
                         'transition-transform duration-250 text-[#6B5E57]/60',
-                        ((link.hasDropdown && activeDropdown === link.label) || (link.hasMega && activeMega)) && 'rotate-180 text-[#5B1515]'
+                        (link.hasDropdown && activeDropdown === link.label) && 'rotate-180 text-[#5B1515]'
                       )}
                     />
                   )}
                   <span
                     className={cn(
                       'absolute bottom-[4px] left-3.5 right-3.5 h-[2px] bg-[#C69A45] transition-transform duration-250 origin-center rounded-full',
-                      (link.href === '/' && !activeDropdown && !activeMega)
+                      (link.href === '/' && !activeDropdown)
                         ? 'scale-x-100'
                         : 'scale-x-0 group-hover:scale-x-100'
                     )}
@@ -529,57 +455,6 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* ═══ CATEGORIES MEGA MENU ═══ */}
-      <div
-        ref={megaMenuRef}
-        onMouseEnter={handleMegaEnter}
-        onMouseLeave={handleMegaLeave}
-        className={cn(
-          'hidden xl:block absolute top-full left-0 right-0 z-40 transition-all duration-300',
-          activeMega
-            ? 'opacity-100 visible translate-y-0'
-            : 'opacity-0 invisible -translate-y-2 pointer-events-none'
-        )}
-      >
-        <div className="bg-white border-t border-[#E8DFD6]/40 shadow-[0_16px_48px_rgba(37,27,24,0.1)]">
-          <div className="max-w-[1440px] mx-auto px-8 lg:px-12 py-10 lg:py-12">
-            <div className="grid grid-cols-4 gap-8 lg:gap-14">
-              {megaMenuData.map((col) => (
-                <div key={col.group}>
-                  <h4 className="text-[9px] font-bold tracking-[0.22em] text-[#C69A45] uppercase mb-5 pb-3 border-b border-[#E8DFD6]/40">
-                    {col.group}
-                  </h4>
-                  <ul className="space-y-0.5">
-                    {col.items.map((item) => (
-                      <li key={item.label}>
-                        <Link
-                          href={item.href}
-                          onClick={closeAll}
-                          className="flex items-center gap-2.5 py-2.5 px-2 text-[13px] text-[#241B18]/65 hover:text-[#5B1515] transition-colors duration-200 rounded-lg group/link"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#E8DFD6] group-hover/link:bg-[#C69A45] transition-colors shrink-0" />
-                          <span className="font-medium">{item.label}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            <div className="mt-10 pt-6 border-t border-[#E8DFD6]/40 flex items-center justify-between">
-              <p className="text-[12px] text-[#6B5E57]">Explore our complete collection of premium home furnishings</p>
-              <Link
-                href="/shop"
-                onClick={closeAll}
-                className="inline-flex items-center gap-2 px-6 py-2.5 text-[10px] font-semibold tracking-wider text-[#C69A45] border border-[#C69A45]/30 rounded-full hover:bg-[#C69A45] hover:text-white transition-all duration-300"
-              >
-                EXPLORE ALL CATEGORIES
-                <ChevronRight size={11} strokeWidth={2} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
     </header>
   );
 }

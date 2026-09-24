@@ -1551,5 +1551,67 @@
     box-shadow: 0 6px 20px rgba(198, 154, 69, 0.3);
     transform: translateY(-2px);
   }
+
+  /* ═══════════════════════════════════════════════════════════════
+     PRODUCT CARD ACTION BUTTONS — hidden by default, reveal on hover/focus
+     ═══════════════════════════════════════════════════════════════ */
+  .actions-container {
+    opacity: 0;
+    transform: translateX(12px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+  }
+
+  .actions-container .action-btn {
+    opacity: 0;
+    transform: translateX(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.15s ease;
+  }
+
+  .actions-container .action-btn:nth-child(2) {
+    transition-delay: 0.03s;
+  }
+  .actions-container .action-btn:nth-child(3) {
+    transition-delay: 0.06s;
+  }
+
+  /* Reveal on hover (desktop devices with hover capability) */
+  @media (hover: hover) and (pointer: fine) {
+    .group:hover .actions-container {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .group:hover .actions-container .action-btn {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Reveal on focus-within (keyboard accessibility + touch devices) */
+  .group:focus-within .actions-container {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  .group:focus-within .actions-container .action-btn {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Touch devices: show actions immediately since hover is unreliable */
+  @media (hover: none) and (pointer: coarse) {
+    .actions-container {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    .actions-container .action-btn {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 }
 

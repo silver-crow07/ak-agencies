@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useRef } from 'react';
 import { Heart, ShoppingCart, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { Product } from '@/types';
@@ -19,20 +18,34 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const { addItem } = useCart();
   const { addItem: addWishlist, removeItem: removeWishlist, isInWishlist } = useWishlist();
   const inWishlist = isInWishlist(product.id);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const discount = product.originalPrice
     ? calculateDiscount(product.price, product.originalPrice)
     : 0;
 
+  function handleButtonFocus() {
+    setIsHovered(true);
+  }
+
+  function handleButtonBlur(e: React.FocusEvent) {
+    if (cardRef.current && !cardRef.current.contains(e.relatedTarget as Node)) {
+      setIsHovered(false);
+    }
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-20px' }}
-      transition={{ duration: 0.5 }}
+    <div
+      ref={cardRef}
       className={cn('group relative bg-surface rounded-xl overflow-hidden card-shadow card-hover', className)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsHovered(true)}
+      onBlur={(e: React.FocusEvent) => {
+        if (!cardRef.current?.contains(e.relatedTarget as Node)) {
+          setIsHovered(false);
+        }
+      }}
     >
       <Link href={`/product/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden bg-cream">
         <img
@@ -70,17 +83,16 @@ export function ProductCard({ product, className }: ProductCardProps) {
         )} />
       </Link>
 
-      <div className="absolute top-3 right-3 z-10 flex flex-col gap-2">
-        <motion.button
-          initial={false}
-          animate={{ x: isHovered ? 0 : 20, opacity: isHovered ? 1 : 0 }}
-          transition={{ duration: 0.2 }}
+      <div className="absolute top-3 right-3 z-10 flex flex-col gap-2 actions-container">
+        <button
           onClick={(e) => {
             e.preventDefault();
             inWishlist ? removeWishlist(product.id) : addWishlist(product);
           }}
+          onFocus={handleButtonFocus}
+          onBlur={handleButtonBlur}
           className={cn(
-            'w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center transition-colors hover:bg-cream',
+            'action-btn w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center transition-colors hover:bg-cream',
             inWishlist && 'bg-primary/10'
           )}
         >
@@ -88,30 +100,25 @@ export function ProductCard({ product, className }: ProductCardProps) {
             size={14}
             className={cn(inWishlist ? 'fill-primary text-primary' : 'text-text-light')}
           />
-        </motion.button>
-        <motion.button
-          initial={false}
-          animate={{ x: isHovered ? 0 : 20, opacity: isHovered ? 1 : 0 }}
-          transition={{ duration: 0.2, delay: 0.05 }}
+        </button>
+        <button
           onClick={(e) => {
             e.preventDefault();
             addItem(product, 1);
           }}
-          className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center transition-colors hover:bg-cream"
+          onFocus={handleButtonFocus}
+          onBlur={handleButtonBlur}
+          className="action-btn w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center transition-colors hover:bg-cream"
         >
           <ShoppingCart size={14} className="text-text-light" />
-        </motion.button>
+        </button>
         <Link
           href={`/product/${product.slug}`}
-          className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center transition-all hover:bg-cream"
+          onFocus={handleButtonFocus}
+          onBlur={handleButtonBlur}
+          className="action-btn w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center transition-all hover:bg-cream"
         >
-          <motion.div
-            initial={false}
-            animate={{ x: isHovered ? 0 : 20, opacity: isHovered ? 1 : 0 }}
-            transition={{ duration: 0.2, delay: 0.1 }}
-          >
-            <Eye size={14} className="text-text-light" />
-          </motion.div>
+          <Eye size={14} className="text-text-light" />
         </Link>
       </div>
 
@@ -138,6 +145,6 @@ export function ProductCard({ product, className }: ProductCardProps) {
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

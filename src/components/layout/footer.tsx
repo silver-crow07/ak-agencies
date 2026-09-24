@@ -23,8 +23,6 @@ const shopLinks = [
 
 const customerCareLinks = [
   { label: 'Contact Us', href: '/contact' },
-  { label: 'Track Order', href: '/track-order' },
-  { label: 'Shipping Information', href: '/shipping' },
   { label: 'Returns & Refunds', href: '/returns' },
   { label: 'FAQs', href: '/faqs' },
   { label: 'Privacy Policy', href: '/privacy' },
@@ -34,7 +32,6 @@ const customerCareLinks = [
 const aboutLinks = [
   { label: 'Our Story', href: '/about' },
   { label: 'Why Choose Us', href: '/about#why-us' },
-  { label: 'Custom Orders', href: '/custom-order' },
   { label: 'Custom Stitching', href: '/custom-order' },
   { label: 'Contact Us', href: '/contact' },
 ];

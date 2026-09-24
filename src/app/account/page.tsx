@@ -1,9 +1,19 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { User, Package, MapPin, Heart, Settings, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { User, Package, MapPin, Heart, Settings, LogOut, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: string;
+}
 
 const accountLinks = [
   { label: 'My Orders', href: '/account/orders', icon: Package, description: 'View your order history' },
@@ -13,6 +23,61 @@ const accountLinks = [
 ];
 
 export default function AccountPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+
+        if (data.success && data.data) {
+          setUser(data.data);
+        } else {
+          router.push('/login');
+        }
+      } catch {
+        router.push('/login');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    checkAuth();
+  }, [router]);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      router.push('/');
+      router.refresh();
+    } catch {
+      setLoggingOut(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <main className="min-h-screen">
+          <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8 py-8 md:py-12">
+            <div className="flex items-center justify-center py-16">
+              <Loader2 size={24} className="animate-spin text-gold" />
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (!user) return null;
+
   return (
     <>
       <Header />
@@ -28,7 +93,12 @@ export default function AccountPage() {
         </div>
 
         <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8 py-8 md:py-12">
-          <h1 className="font-serif text-2xl md:text-3xl font-bold text-primary mb-8">My Account</h1>
+          <div className="mb-8">
+            <h1 className="font-serif text-2xl md:text-3xl font-bold text-primary mb-2">
+              Welcome, {user.name}
+            </h1>
+            <p className="text-sm text-text-light">{user.email}</p>
+          </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
             {accountLinks.map((link) => (
@@ -57,8 +127,16 @@ export default function AccountPage() {
                 <Settings size={14} />
                 Settings
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-red-500 border border-red-200 rounded hover:bg-red-50 transition-colors">
-                <LogOut size={14} />
+              <button
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-red-500 border border-red-200 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+              >
+                {loggingOut ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <LogOut size={14} />
+                )}
                 Sign Out
               </button>
             </div>
