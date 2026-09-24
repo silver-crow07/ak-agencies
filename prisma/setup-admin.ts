@@ -113,7 +113,7 @@ async function main() {
       return;
     }
 
-    // Promote existing CUSTOMER to ADMIN
+    // this Promote existing CUSTOMER to ADMIN
     await prisma.user.update({
       where: { id: existingUser.id },
       data: {
